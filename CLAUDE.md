@@ -15,19 +15,18 @@ No test suite is configured.
 
 ## Architecture
 
-Single-page React app (Vite + React 19). All application logic lives in one file: `src/App.jsx`.
+Single-page React app (Vite + React 19) with no routing, no state management library, and no backend — data is not persisted between page reloads.
 
-**State** (all in `App`):
-- `transactions` — array of `{ id, description, amount, type, category, date }`. `amount` is stored as a **string**, not a number — this is a known bug causing incorrect totals (the `reduce` sums strings via concatenation instead of numeric addition).
-- Form fields: `description`, `amount`, `type`, `category`
-- Filter fields: `filterType`, `filterCategory`
+**Component tree**:
+```
+App                  — owns transactions[] state, passes onAdd callback down
+├── Summary          — receives transactions[], computes totalIncome/totalExpenses/balance internally
+├── TransactionForm  — owns its own form state (description, amount, type, category); calls onAdd(transaction) on submit
+└── TransactionList  — receives transactions[], owns its own filter state (filterType, filterCategory)
+```
 
-**Data flow**: `transactions` is filtered inline on every render into `filteredTransactions`. Totals (`totalIncome`, `totalExpenses`, `balance`) are also computed inline. There is no state management library, no routing, and no backend — data is not persisted between page reloads.
+**Transaction shape**: `{ id, description, amount, type, category, date }` where `amount` is a number, `type` is `"income"` or `"expense"`, and `category` is one of `["food", "housing", "utilities", "transport", "entertainment", "salary", "other"]`. The `categories` array is defined locally in both `TransactionForm` and `TransactionList`.
 
-**Styling**: `src/App.css` uses plain CSS classes (`.income-amount`, `.expense-amount`, `.balance-amount`, `.delete-btn`). The `.delete-btn` class is defined in CSS but the delete button is not yet rendered in the JSX — it's a placeholder for a feature to be added.
+**Styling**: `src/App.css` uses plain CSS classes. The `.delete-btn` class is defined but no delete feature exists yet.
 
-**Known intentional issues** (this is a course starter project):
-- `amount` stored as string causes wrong totals
-- "Freelance Work" is coded as `type: "expense"` but `category: "salary"` — a data inconsistency
-- No delete functionality despite `.delete-btn` CSS being present
-- UI has no styling polish
+**Known intentional issue**: "Freelance Work" seed data has `type: "expense"` but `category: "salary"` — a data inconsistency left from the original starter.
