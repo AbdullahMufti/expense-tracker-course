@@ -49,6 +49,19 @@ h1 {
   font-weight: bold;
 }
 
+.chart-container {
+  border: 1px solid #ddd;
+  padding: 16px;
+  margin-bottom: 24px;
+  background: #fff;
+}
+
+.chart-container h2 {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 8px;
+}
+
 .add-transaction {
   border: 1px solid #ddd;
   padding: 16px;
