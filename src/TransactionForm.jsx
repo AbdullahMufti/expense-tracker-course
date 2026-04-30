@@ -29,7 +29,7 @@ function TransactionForm({ onAdd }) {
 
   return (
     <div className="add-transaction">
-      <h2>Add Transaction</h2>
+      <h2 className="section-title">Add Transaction</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -42,6 +42,8 @@ function TransactionForm({ onAdd }) {
           placeholder="Amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          min="0"
+          step="0.01"
         />
         <select value={type} onChange={(e) => setType(e.target.value)}>
           <option value="income">Income</option>
@@ -52,7 +54,7 @@ function TransactionForm({ onAdd }) {
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
-        <button type="submit">Add</button>
+        <button type="submit">Add +</button>
       </form>
     </div>
   );
