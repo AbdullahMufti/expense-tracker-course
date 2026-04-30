@@ -1,4 +1,6 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from 'recharts';
+import { useMemo } from 'react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from 'recharts'
+import { fmt, roundCurrency } from './utils'
 
 const COLORS = {
   food:          '#f59e0b',
@@ -10,32 +12,35 @@ const COLORS = {
   other:         '#6b7494',
 };
 
+// reads active theme tokens at render time — works for both dark and light mode
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const s = getComputedStyle(document.documentElement);
+  const get = (v) => s.getPropertyValue(v).trim();
   return (
     <div style={{
-      background: '#1a2035',
-      border: '1px solid rgba(255,255,255,0.1)',
+      background: get('--bg2'),
+      border: `1px solid ${get('--glass-border')}`,
       borderRadius: 8,
       padding: '10px 14px',
       fontSize: 13,
-      color: '#e8eaf2',
+      color: get('--text'),
     }}>
-      <p style={{ textTransform: 'capitalize', marginBottom: 4, color: '#9aa3c2' }}>{label}</p>
-      <p style={{ fontWeight: 600, color: '#f59e0b' }}>${payload[0].value.toFixed(2)}</p>
+      <p style={{ textTransform: 'capitalize', marginBottom: 4, color: get('--text-dim') }}>{label}</p>
+      <p style={{ fontWeight: 600, color: get('--accent') }}>${fmt(payload[0].value)}</p>
     </div>
   );
 };
 
 function SpendingChart({ transactions }) {
-  const expenses = transactions.filter(t => t.type === 'expense');
-
-  const totals = expenses.reduce((acc, t) => {
-    acc[t.category] = (acc[t.category] || 0) + t.amount;
-    return acc;
-  }, {});
-
-  const data = Object.entries(totals).map(([name, value]) => ({ name, value }));
+  const data = useMemo(() => {
+    const expenses = transactions.filter(t => t.type === 'expense');
+    const totals = expenses.reduce((acc, t) => {
+      acc[t.category] = roundCurrency((acc[t.category] || 0) + t.amount);
+      return acc;
+    }, {});
+    return Object.entries(totals).map(([name, value]) => ({ name, value }));
+  }, [transactions]);
 
   if (data.length === 0) return null;
 
@@ -46,17 +51,17 @@ function SpendingChart({ transactions }) {
         <BarChart data={data} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
           <XAxis
             dataKey="name"
-            tick={{ fill: '#6b7494', fontSize: 12, fontFamily: 'DM Sans' }}
+            tick={{ fill: 'var(--text-muted)', fontSize: 12, fontFamily: 'DM Sans' }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             tickFormatter={(v) => `$${v}`}
-            tick={{ fill: '#6b7494', fontSize: 12, fontFamily: 'DM Sans' }}
+            tick={{ fill: 'var(--text-muted)', fontSize: 12, fontFamily: 'DM Sans' }}
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(128,128,128,0.08)' }} />
           <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={52}>
             {data.map((entry) => (
               <Cell key={entry.name} fill={COLORS[entry.name] || '#6b7494'} />

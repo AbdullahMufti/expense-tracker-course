@@ -1,11 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Summary from './Summary'
 import SpendingChart from './SpendingChart'
 import TransactionForm from './TransactionForm'
 import TransactionList from './TransactionList'
+import ThemeToggle from './ThemeToggle'
 
 function App() {
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('ft-theme');
+    return saved ? saved === 'dark' : true;
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('ft-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+
   const [transactions, setTransactions] = useState([
     { id: 1, description: "Salary", amount: 5000, type: "income", category: "salary", date: "2025-01-01" },
     { id: 2, description: "Rent", amount: 1200, type: "expense", category: "housing", date: "2025-01-02" },
@@ -17,19 +28,23 @@ function App() {
     { id: 8, description: "Netflix", amount: 15, type: "expense", category: "entertainment", date: "2025-01-10" },
   ]);
 
+  // functional updater avoids stale closure under concurrent renders
   const handleAdd = (transaction) => {
-    setTransactions([...transactions, transaction]);
+    setTransactions(prev => [...prev, transaction]);
   };
 
   const handleDelete = (id) => {
-    setTransactions(transactions.filter(t => t.id !== id));
+    setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Finance <span>Tracker</span></h1>
-        <p className="subtitle">Your personal money dashboard</p>
+        <div className="header-left">
+          <h1>Finance <span>Tracker</span></h1>
+          <p className="subtitle">Your personal money dashboard</p>
+        </div>
+        <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} />
       </header>
       <Summary transactions={transactions} />
       <SpendingChart transactions={transactions} />
